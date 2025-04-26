@@ -1,0 +1,7 @@
+flask
+numpy
+pandas
+sentence-transformers
+torch
+streamlit
+requests 
