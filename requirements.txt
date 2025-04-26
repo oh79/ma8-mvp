@@ -5,5 +5,3 @@ sentence-transformers
 torch
 streamlit
 requests 
-dotenv
-konlpy

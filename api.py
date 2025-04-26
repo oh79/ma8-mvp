@@ -3,120 +3,69 @@ import numpy as np
 import pandas as pd
 import sqlite3
 from sentence_transformers import SentenceTransformer
-import logging # 로깅 모듈 추가
-from nlp_parse import parse # nlp_parse 모듈에서 parse 함수 임포트
-import math # math.inf 사용 위해 추가
-
-# 로깅 설정 (파일 핸들러 추가 고려)
-# TODO: 운영 환경에서는 파일 로깅 또는 외부 로깅 시스템 연동 고려
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 데이터 및 모델 로드 (애플리케이션 시작 시 한 번만)
 try:
-    logging.info("데이터베이스 연결 중...")
+    print("데이터베이스 연결 중...")
     # check_same_thread=False 는 Flask의 기본 개발 서버에서 여러 요청을 처리할 때 필요할 수 있습니다.
     # 실제 운영 환경에서는 더 견고한 DB 연결 관리 방식이 필요할 수 있습니다.
     con = sqlite3.connect('mvp.db', check_same_thread=False)
-
-    logging.info("인플루언서 데이터 로딩 중 (influencers 테이블)...")
-    # DB에서 influencers 테이블 전체 로드 (pk 컬럼 존재 가정)
-    # read_sql_query 대신 read_sql 사용 가능
-    infl_df_all = pd.read_sql("SELECT * FROM influencers", con)
-    logging.info(f"{len(infl_df_all)}명의 인플루언서 데이터 로드 완료.")
-
-    logging.info("임베딩 벡터 로딩 중 (vecs.npy)...")
-    vecs_all = np.load('vecs.npy')
-    logging.info(f"{len(vecs_all)}개의 임베딩 벡터 로드 완료.")
-
-    # 데이터와 벡터 개수 일치 확인
-    if len(infl_df_all) != len(vecs_all):
-        logging.error(f"인플루언서 데이터({len(infl_df_all)})와 임베딩 벡터({len(vecs_all)}) 개수가 일치하지 않습니다!")
-        raise ValueError("Data and vector counts do not match.")
-
-    logging.info("Sentence Transformer 모델 로딩 중...")
+    print("메타데이터 로딩 중 (meta.csv)...")
+    meta = pd.read_csv('meta.csv')
+    print("임베딩 벡터 로딩 중 (vecs.npy)...")
+    vecs = np.load('vecs.npy')
+    print("Sentence Transformer 모델 로딩 중...")
+    # 모델 로딩은 시간이 걸릴 수 있습니다.
     model = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
-    logging.info("모델 로딩 완료.")
-    # meta.csv 와 vecs.npy 는 요청 처리 시 필요할 때 로드하도록 변경 (메모리 효율)
+    print("데이터 및 모델 로딩 완료.")
+except FileNotFoundError as e:
+    print(f"오류: 필요한 파일({e.filename})을 찾을 수 없습니다. 4단계가 올바르게 완료되었는지 확인하세요.")
+    exit()
 except Exception as e:
-    logging.error(f"모델 로딩 또는 DB 연결 중 치명적 오류 발생: {e}")
+    print(f"데이터 또는 모델 로딩 중 오류 발생: {e}")
     exit()
 
 app = Flask(__name__)
 
-@app.route("/search", methods=['GET'])
+@app.route("/search", methods=['GET']) # HTTP GET 메서드만 허용
 def search():
-    q = request.args.get("q", "")
+    # 쿼리 파라미터 받기 (q: 검색어, k: 반환할 개수)
+    q = request.args.get("q", "") # 검색어가 없으면 빈 문자열
     try:
-        k = int(request.args.get("k", 5))
+        k = int(request.args.get("k", 5)) # k가 없거나 숫자가 아니면 기본값 5 사용
     except ValueError:
-        k = 5
-        logging.warning(f"쿼리 파라미터 'k'가 숫자가 아니거나 없습니다. 기본값 5를 사용합니다.")
+        k = 5 # 숫자로 변환 실패 시 기본값 5 사용
 
     if not q:
-        logging.info("검색어가 비어 있어 빈 결과를 반환합니다.")
+        # 검색어가 없으면 빈 리스트 반환
         return jsonify([])
 
-    logging.info(f"검색 요청: q='{q}', k={k}")
+    print(f"검색 요청: q='{q}', k={k}")
 
     try:
-        # 1. 쿼리 파싱하여 필터 추출
-        filters = parse(q)
-        logging.info(f"파싱된 필터: {filters}")
-        follower_min = filters.get("follower_min", 0)
-        follower_max = filters.get("follower_max", math.inf) # 기본 최대값 무한대
-
-        # 2. 미리 로드된 데이터프레임 필터링
-        condition = (infl_df_all['follower_count'] >= follower_min) & (infl_df_all['follower_count'] <= follower_max)
-        # TODO: 카테고리 필터링 추가 시
-        # if filters.get("category"):
-        #     condition &= (infl_df_all['category'] == filters["category"]) # category 컬럼 필요
-
-        filtered_infl_df = infl_df_all[condition].copy() # 필터링 결과 복사본 사용
-        logging.info(f"팔로워 필터링 후 {len(filtered_infl_df)}명의 인플루언서 발견.")
-
-        if filtered_infl_df.empty:
-            logging.info("필터링 조건에 맞는 인플루언서가 없습니다.")
-            return jsonify([])
-
-        # 3. 필터링된 데이터에 대한 임베딩 벡터 선택
-        # filtered_infl_df의 원본 인덱스(infl_df_all 기준)를 사용하여 벡터 선택
-        filtered_indices = filtered_infl_df.index.tolist()
-        try:
-            filtered_vecs = vecs_all[filtered_indices]
-        except IndexError as ie:
-             logging.error(f"임베딩 벡터 선택 중 인덱스 오류: {ie}. 데이터와 벡터 싱크 문제일 수 있음.", exc_info=True)
-             return jsonify({"error": "임베딩 벡터 처리 중 오류.", "details": str(ie)}), 500
-
-        # 4. 쿼리 임베딩 및 유사도 계산
-        logging.info("검색어 임베딩 생성 중...")
+        # 검색어 임베딩 생성
+        print("검색어 임베딩 생성 중...")
         qv = model.encode([q])
-        logging.info("유사도 계산 중 (필터링된 데이터 대상)...")
-        # 벡터 정규화 후 내적 계산 (코사인 유사도)
-        # filtered_vecs_norm = filtered_vecs / np.linalg.norm(filtered_vecs, axis=1, keepdims=True)
-        # qv_norm = qv / np.linalg.norm(qv)
-        # sims = (filtered_vecs_norm @ qv_norm.T).flatten()
-        # SentenceTransformer 모델은 보통 정규화된 벡터를 반환하므로 내적만 수행
-        sims = (filtered_vecs @ qv.T).flatten()
+        print("유사도 계산 중...")
+        # 코사인 유사도 계산 (벡터 내적)
+        # vecs와 qv가 정규화되어 있다고 가정 (SentenceTransformer 모델은 일반적으로 정규화된 벡터 출력)
+        sims = (vecs @ qv.T).flatten() # (N,) 형태의 유사도 점수 배열
 
-        # 상위 k개 인덱스 찾기 (filtered_vecs 기준)
-        num_results = min(k, len(sims))
-        if len(sims) == 0:
-             logging.info("유사도 계산 결과가 비어 있습니다.")
-             return jsonify([])
-        # argsort 결과는 filtered_vecs/filtered_infl_df 내에서의 인덱스 (0부터 시작)
-        top_indices_in_filtered = sims.argsort()[-num_results:][::-1]
+        # 가장 유사한 k개 인덱스 찾기
+        # argsort는 오름차순 정렬 인덱스를 반환하므로, [-k:]로 뒤에서 k개를 가져오고 [::-1]로 내림차순 뒤집기
+        top_indices = sims.argsort()[-k:][::-1]
+        print(f"상위 {k}개 인덱스: {top_indices}")
+        print(f"유사도 점수: {sims[top_indices]}")
 
-        logging.info(f"상위 {num_results}개 인덱스 (필터링 내): {top_indices_in_filtered}")
-        logging.info(f"유사도 점수: {sims[top_indices_in_filtered]}")
+        # 결과 데이터 구성 (meta 데이터프레임에서 해당 인덱스 선택)
+        results = meta.iloc[top_indices].to_dict(orient="records")
 
-        # 5. 최종 결과 구성 (filtered_infl_df 사용)
-        # iloc를 사용하여 filtered_infl_df 내에서 상위 k개 인덱스에 해당하는 행 선택
-        results = filtered_infl_df.iloc[top_indices_in_filtered].to_dict(orient="records")
-
+        # JSON 형태로 결과 반환
         return jsonify(results)
 
     except Exception as e:
-        logging.error(f"검색 처리 중 오류 발생: {e}", exc_info=True)
+        print(f"검색 처리 중 오류 발생: {e}")
+        # 서버 오류 시 500 에러와 메시지 반환
         return jsonify({"error": "검색 중 오류가 발생했습니다.", "details": str(e)}), 500
 
 if __name__ == "__main__":
