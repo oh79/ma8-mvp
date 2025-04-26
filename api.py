@@ -64,14 +64,21 @@ def search():
         logging.info(f"파싱된 필터: {filters}")
         follower_min = filters.get("follower_min", 0)
         follower_max = filters.get("follower_max", math.inf) # 기본 최대값 무한대
+        # 카테고리 필터링 조건 추가 (카테고리 필터가 존재할 경우) - Week 2 TODO
+        # TODO (Week 2): category 컬럼 필터링 로직 구현. DB에 category 컬럼이 있고,
+        #                파싱된 category_filter 값이 있을 때 아래 조건 활성화 필요.
+        # category_filter = filters.get("category") # 카테고리 필터값 가져오기
+        # if category_filter:
+        #     condition &= (infl_df_all['category'] == category_filter)
+        #     logging.info(f"카테고리 '{category_filter}' 필터링 적용.")
 
         # 2. 미리 로드된 데이터프레임 필터링
+        # 팔로워 수 필터링 조건 기본 생성
         condition = (infl_df_all['follower_count'] >= follower_min) & (infl_df_all['follower_count'] <= follower_max)
-        # TODO: 카테고리 필터링 추가 시
-        # if filters.get("category"):
-        #     condition &= (infl_df_all['category'] == filters["category"]) # category 컬럼 필요
 
+        # 최종 조건으로 데이터프레임 필터링
         filtered_infl_df = infl_df_all[condition].copy() # 필터링 결과 복사본 사용
+        # 로그 메시지 원복 (팔로워 필터링만 언급)
         logging.info(f"팔로워 필터링 후 {len(filtered_infl_df)}명의 인플루언서 발견.")
 
         if filtered_infl_df.empty:

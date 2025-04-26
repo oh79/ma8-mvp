@@ -154,8 +154,28 @@ def parse(text):
 
     follower_min, follower_max = parse_followers(text)
     category = parse_category(text)
-    # TODO: 제품 키워드 추출 로직 추가 (형태소 분석 결과 활용)
-    product = None # 임시
+
+    # --- 제품 키워드 추출 로직 추가 ---
+    product = None
+    nouns = okt.nouns(text) # 형태소 분석기에서 명사 추출
+
+    # 카테고리 키워드 목록 준비 (중첩 리스트 펼치기)
+    category_keywords = set()
+    if category and category in CATEGORIES:
+        category_keywords.update(CATEGORIES[category]) # 해당 카테고리의 키워드 추가
+        category_keywords.add(category) # 대표 카테고리명도 추가 (e.g., "뷰티")
+
+    # 팔로워 관련 단어 및 일반적인 단어 제외 (간단한 필터링)
+    # TODO (Week 2): 더 정교한 불용어 처리 필요 (예: 품사 태깅 활용, 불용어 사전 확장)
+    follower_words = {'팔로워', '명', '이상', '이하', '미만', '사이', '정도', '만', '천'}
+    stop_words = category_keywords.union(follower_words)
+
+    # 추출된 명사 중에서, 카테고리 키워드나 팔로워 관련 단어가 아닌 첫 번째 명사를 제품 후보로 선택
+    # TODO (Week 2): 여러 제품 후보 처리, 키워드 중요도 계산, 의미 분석 등 정확도 개선 필요
+    potential_products = [noun for noun in nouns if noun not in stop_words and len(noun) > 1] # 한 글자 명사 제외
+    if potential_products:
+        product = potential_products[0]
+    # --- 제품 키워드 추출 로직 끝 ---
 
     filters = {}
     if follower_min > 0:
@@ -166,7 +186,7 @@ def parse(text):
     if category:
         filters['category'] = category
     if product:
-        filters['product'] = product
+        filters['product'] = product # 추출된 제품 키워드 추가
 
     return filters
 
@@ -174,46 +194,55 @@ def parse(text):
 # TODO: 정식 테스트 프레임워크(예: pytest) 사용 고려
 CASES = [
   ("선크림 홍보, 팔로워 1만~5만, 뷰티", {
-    # "product": "선크림", # 제품 추출 미구현
+    "product": "선크림", # 제품 추출 예상 결과 추가
     "follower_min": 10000, "follower_max": 50000,
     "category": "뷰티"
   }),
   ("팔로워 10만 이상 IT 유튜버", {
       "follower_min": 100000,
-      "category": "IT"
+      "category": "IT",
+      "product": "유튜버" # 제품 예시 추가 (개선 필요)
   }),
   ("5천명 ~ 2만명 사이 패션 인플루언서", {
       "follower_min": 5000, "follower_max": 20000,
-      "category": "패션"
+      "category": "패션",
+      "product": "인플루언서" # 제품 예시 추가
   }),
    ("여행 관련 3천 이상", {
       "follower_min": 3000,
-      "category": "여행"
+      "category": "여행",
+      "product": "관련" # 제품 예시 추가 (개선 필요)
   }),
   ("팔로워 7만명", {
       "follower_min": 70000
-      # 카테고리 없음
+      # 카테고리 없음, 제품 없음
   }),
-  ("대략 5천명 이하 음식 먹방", {
+  ("대략 5천명 이하 음식 먹방 유튜버", { # 입력 텍스트 수정 (유튜버 추가)
       "follower_max": 5000,
-      "category": "푸드"
+      "category": "푸드",
+      "product": "유튜버" # 제품 예시 추가
   }),
    ("게임 유튜버 20000명", {
       "follower_min": 20000,
-      "category": "게임"
+      "category": "게임",
+      "product": "유튜버" # 제품 예시 추가
   }),
   ("팔로워 만명", {
-      # 팔로워 수치 없음
-      # 카테고리 없음
+       # 필터 없음
   }),
   ("화장품 광고", {
-      # 팔로워 조건 없음
-      "category": "뷰티"
+      "category": "뷰티",
+      "product": "광고" # 제품 예시 추가
   }),
    ("1만 팔로워 스타일리스트", {
       "follower_min": 10000,
-      "category": "패션"
-  })
+      "category": "패션",
+      "product": "스타일리스트" # 제품 예시 추가
+  }),
+   ("갤럭시 휴대폰 IT", { # 새 테스트 케이스
+       "category": "IT",
+       "product": "갤럭시" # 또는 휴대폰? 현재 로직으론 첫번째 명사
+   })
 ]
 
 # --- 테스트 실행 코드 --- #

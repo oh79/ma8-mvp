@@ -20,10 +20,20 @@ if st.button("검색"): # '검색' 버튼이 클릭되면 아래 로직 실행
             df = pd.DataFrame(data) # JSON 데이터를 Pandas DataFrame으로 변환
             # 컬럼 순서 및 이름 조정 (필요 시)
             # TODO: 컬럼 존재 여부를 더 안전하게 확인하고, 필수 컬럼이 없을 경우 사용자에게 알림 표시 개선
-            if 'username' in df.columns and 'follower_count' in df.columns:
-                 st.dataframe(df[['username', 'follower_count']]) # 'username', 'follower_count' 컬럼만 표 형태로 표시
-            else:
-                 st.warning("결과에 'username' 또는 'follower_count' 컬럼이 없어 전체 데이터를 표시합니다.")
+
+            # 표시할 컬럼 목록 정의 (category 추가)
+            display_columns = []
+            if 'username' in df.columns:
+                display_columns.append('username')
+            if 'follower_count' in df.columns:
+                display_columns.append('follower_count')
+            if 'category' in df.columns:
+                display_columns.append('category')
+
+            if display_columns: # 표시할 컬럼이 있다면
+                 st.dataframe(df[display_columns]) # 정의된 컬럼만 표 형태로 표시
+            else: # 표시할 주요 컬럼(username, follower_count, category)이 하나도 없다면
+                 st.warning("결과에 주요 컬럼이 없어 전체 데이터를 표시합니다.")
                  st.dataframe(df) # 원본 DataFrame 그대로 표시
 
             # --- 상세 보기 기능 ---

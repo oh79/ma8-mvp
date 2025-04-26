@@ -1,6 +1,6 @@
-# 📈 인스타 인플루언서 검색 MVP (Sprint 2 - Week 1)
+# 📈 인스타 인플루언서 검색 MVP (Sprint 2 - Week 1 완료)
 
-간단한 자연어 쿼리를 통해 인스타그램 인플루언서를 검색하는 MVP 프로젝트입니다. 텍스트 유사도 검색과 팔로워 수 필터링 기능을 제공합니다.
+간단한 자연어 쿼리를 통해 인스타그램 인플루언서를 검색하는 MVP 프로젝트입니다. **Week 1에서는 자연어 쿼리에서 팔로워 수 범위를 추출하여 필터링하는 기능과 텍스트 유사도 기반 검색 기능을 구현했습니다.**
 
 ## Setup
 
@@ -53,22 +53,14 @@
 ## 실행 (Run Application)
 
 1.  **Flask API 서버 실행:**
-    *   API 서버를 백그라운드에서 실행합니다.
+    *   `.env` 파일에 `FLASK_APP=api.py` 설정이 되어 있는지 확인합니다. (없으면 추가)
+    *   터미널에서 다음 명령어를 실행합니다:
       ```bash
-      # Windows (Git Bash 또는 WSL)
-      export FLASK_APP=api.py
-      flask run &
-
-      # Windows (cmd) - 백그라운드 실행 방식이 다름 (start /b 사용 등)
-      # set FLASK_APP=api.py
-      # start /b flask run
-
-      # macOS/Linux
-      export FLASK_APP=api.py
-      flask run &
+      flask run
       ```
+    *   (백그라운드 실행은 필요에 따라 `&` 등을 사용)
 2.  **Streamlit UI 실행:**
-    *   웹 기반 사용자 인터페이스를 실행합니다.
+    *   다른 터미널에서 다음 명령어를 실행합니다:
       ```bash
       streamlit run app.py
       ```
@@ -76,20 +68,48 @@
 
 ## 주요 파일 설명
 
-*   `scraper.py`: 인스타그램 데이터를 스크래핑하여 CSV 파일로 저장합니다.
+*   `scraper.py`: 인스타그램 데이터를 스크래핑하여 `influencers.csv`, `posts.csv` 파일로 저장합니다. (Week 1: biography 기반 카테고리 추정 로직 포함)
 *   `etl.py`: CSV 데이터를 SQLite DB(`mvp.db`)로 로드합니다.
 *   `embed.py`: 인플루언서 자기소개 텍스트를 임베딩하여 `vecs.npy`와 `meta.csv`를 생성합니다.
-*   `nlp_parse.py`: 자연어 쿼리를 분석하여 팔로워, 카테고리 등의 필터 조건을 추출합니다.
-*   `api.py`: Flask 기반의 검색 API 서버입니다. 필터링 및 유사도 검색 로직을 포함합니다.
-*   `app.py`: Streamlit 기반의 웹 UI입니다. 사용자가 검색어를 입력하고 결과를 확인합니다.
+*   `nlp_parse.py`: 자연어 쿼리를 분석하여 **팔로워 범위** 필터 조건을 추출합니다. (Week 1: 카테고리, 제품 키워드 추출 로직은 포함되어 있으나 개선 필요)
+*   `api.py`: Flask 기반의 검색 API 서버입니다. **팔로워 수 필터링** 및 유사도 검색 로직을 포함합니다. (Week 1: 카테고리 필터링 로직은 주석 처리)
+*   `app.py`: Streamlit 기반의 웹 UI입니다. 사용자가 검색어를 입력하고 결과를 확인합니다. (Week 1: 결과 테이블에 카테고리 컬럼 표시 추가)
 *   `requirements.txt`: 프로젝트 실행에 필요한 Python 라이브러리 목록입니다.
-*   `.env`: 인스타그램 계정 정보 등 민감한 설정을 저장합니다.
+*   `.env`: 인스타그램 계정 정보 및 `FLASK_APP` 설정을 저장합니다.
 *   `mvp.db`: 스크래핑된 데이터가 저장되는 SQLite 데이터베이스 파일입니다.
 *   `vecs.npy`: 인플루언서 자기소개 임베딩 벡터 데이터입니다.
-*   `meta.csv`: 임베딩 벡터 순서와 매칭되는 메타데이터입니다.
+*   `meta.csv`: 임베딩 벡터 순서와 매칭되는 메타데이터입니다. (현재 사용되지 않음)
 *   `scraping_log.md`: 스크래핑 강도 테스트 기록 파일입니다.
 
-## Sprint 1 워크플로우
+## Sprint 2 - Week 1 완료 기능
+
+*   자연어 쿼리에서 팔로워 수 범위(X만~Y만, X천 이상 등) 추출 (`nlp_parse.py`)
+*   추출된 팔로워 수 범위로 검색 대상 필터링 (`api.py`)
+*   필터링된 결과 내에서 입력 쿼리와 인플루언서 biography 간 텍스트 유사도 계산 (`api.py`, Sentence Transformer)
+*   유사도 순으로 정렬된 결과 반환 (`api.py`)
+*   Streamlit UI에서 검색어 입력 및 결과(username, follower_count, category) 확인 (`app.py`)
+*   데이터 스크래핑(`scraper.py`), DB 적재(`etl.py`), 임베딩 생성(`embed.py`) 파이프라인 구축
+
+## Sprint 2 - Week 2 계획 (TODO)
+
+*   **카테고리 필터링 기능 활성화 (`api.py`):**
+    *   `nlp_parse.py`에서 추출된 카테고리 정보를 사용하여 검색 결과를 필터링하는 로직 구현 및 활성화.
+    *   필요시 `influencers` 테이블 스키마 및 데이터 확인 (`category` 컬럼).
+*   **NLP 파싱 정확도 개선 (`nlp_parse.py`):**
+    *   제품 키워드 추출 로직 개선 (단순 명사 추출 이상).
+    *   불용어 처리 정교화.
+    *   카테고리 분류 정확도 향상 방안 검토 (추가 키워드, 모델 사용 등).
+*   **스크래핑 안정성 및 정보 확장 (`scraper.py`):**
+    *   API 요청 오류 처리 및 재시도 로직 강화.
+    *   카테고리 추정 정확도 향상 방안 모색 (예: 게시물 해시태그 분석 추가).
+*   **검색 결과 개선:**
+    *   유사도 계산 방식 및 모델 파라미터 튜닝.
+    *   결과 랭킹 로직 개선 (예: 팔로워 수 가중치 부여 등).
+*   **(선택) UI 개선 (`app.py`):**
+    *   상세 보기에 더 많은 정보 표시 (biography 등).
+    *   검색 결과 시각화 (예: 광고 비율 파이 차트 - `posts.csv` 데이터 활용 필요).
+
+## Sprint 1 워크플로우 (참고용)
 
 아래는 현재 프로젝트(Sprint 1)의 데이터 처리 및 애플리케이션 실행 흐름을 나타내는 다이어그램입니다.
 

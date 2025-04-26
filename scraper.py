@@ -6,6 +6,7 @@ import time
 import os
 from dotenv import load_dotenv
 import random
+from nlp_parse import parse_category # parse_category 함수 임포트
 
 # .env 파일에서 환경 변수 로드 (민감 정보 관리)
 # 스크립트 시작 시점에 호출하여 필요한 환경 변수를 로드합니다.
@@ -76,6 +77,11 @@ def fetch_instagram_data(cl: Client, username: str):
             logging.info(f"{username}의 게시물 {len(posts)}개 가져옴")
 
             # --- 인플루언서 정보 딕셔너리 생성 ---
+            biography_text = user_info.biography.replace('\\n', ' ') if user_info.biography and isinstance(user_info.biography, str) else ""
+            # 카테고리 추정 (biography 기반)
+            estimated_category = parse_category(biography_text)
+            logging.info(f"사용자 '{username}'의 추정 카테고리: {estimated_category}")
+
             influencer_details = {
                 'username': user_info.username,
                 'pk': user_info.pk,
@@ -83,8 +89,8 @@ def fetch_instagram_data(cl: Client, username: str):
                 'follower_count': user_info.follower_count,
                 'following_count': user_info.following_count,
                 'media_count': user_info.media_count,
-                # biography 필드가 존재하고 문자열일 경우에만 replace 적용
-                'biography': user_info.biography.replace('\n', ' ') if user_info.biography and isinstance(user_info.biography, str) else user_info.biography,
+                'biography': biography_text, # biography 저장 (줄바꿈 제거됨)
+                'category': estimated_category, # 추정된 카테고리 추가
                 'external_url': user_info.external_url,
                 'is_private': user_info.is_private,
                 'is_verified': user_info.is_verified,
@@ -118,13 +124,9 @@ def fetch_instagram_data(cl: Client, username: str):
             logging.warning(f"사용자를 찾을 수 없음: {username}")
             return None, []
         except PrivateAccount:
-            # 비공개 계정인 경우 경고 로그 남김
-            # 비공개 계정은 게시물 조회가 불가능하지만, 제한적인 프로필 정보는 반환될 수 있음.
-            logging.warning(f"비공개 계정: {username}. 게시물을 가져올 수 없습니다.")
-            # TODO: 비공개 계정 처리 정책 결정 필요 (예: 프로필 정보만이라도 저장할지 등)
-            # user_info_by_username 에서 PrivateAccount 발생 시 user_info 객체가 없을 수 있음에 유의
-            # 현재 로직은 PrivateAccount 발생 전 user_info 가 성공적으로 반환되었다고 가정함.
-            # 더 안전하게 하려면, 예외 발생 시 user_info 객체 존재 여부 확인 필요.
+            # 비공개 계정인 경우에도 biography는 없을 수 있음
+            biography_text = ""
+            estimated_category = None # 비공개는 카테고리 추정 불가
             try:
                 # user_info 객체가 있으면 해당 정보 사용, 없으면 기본값 사용
                 profile_username = user_info.username if 'user_info' in locals() and user_info else username
@@ -145,7 +147,8 @@ def fetch_instagram_data(cl: Client, username: str):
                 'follower_count': None, # 비공개 계정 정보 제한적
                 'following_count': None,
                 'media_count': None,
-                'biography': None,
+                'biography': biography_text, # 빈 문자열 또는 None? None이 나을수도. 일단 빈 문자열
+                'category': estimated_category, # 비공개 계정은 카테고리 None
                 'external_url': None,
                 'is_private': True,
                 'is_verified': None,
