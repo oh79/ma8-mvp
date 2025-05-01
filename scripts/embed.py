@@ -7,9 +7,9 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- 설정 ---
-INPUT_CSV_FILE = 'influencers.csv' # 스크래핑 결과 CSV 파일
-OUTPUT_VEC_FILE = 'vecs.npy'      # 생성될 임베딩 벡터 파일
-OUTPUT_META_FILE = 'meta.csv'     # 생성될 메타데이터 파일 (벡터 순서와 일치)
+INPUT_CSV_FILE = 'data/influencers.csv' # 스크래핑 결과 CSV 파일 (경로 수정)
+OUTPUT_VEC_FILE = 'data/vecs.npy'      # 생성될 임베딩 벡터 파일 (경로 수정)
+OUTPUT_META_FILE = 'data/meta.csv'     # 생성될 메타데이터 파일 (벡터 순서와 일치) (경로 수정)
 MODEL_NAME = 'snunlp/KR-SBERT-V40K-klueNLI-augSTS' # 사용할 Sentence Transformer 모델
 
 # 메타데이터 파일에 포함할 컬럼 목록
