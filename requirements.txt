@@ -4,6 +4,10 @@ pandas
 sentence-transformers
 torch
 streamlit
-requests 
-dotenv
+requests
+python-dotenv
+pillow
 konlpy
+spacy
+pytest
+pytest-mock

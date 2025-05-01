@@ -3,8 +3,8 @@ import sqlite3
 
 # CSV 파일 읽기
 try:
-    df_inf = pd.read_csv('influencers.csv')
-    df_posts = pd.read_csv('posts.csv')
+    df_inf = pd.read_csv('data/influencers.csv')
+    df_posts = pd.read_csv('data/posts.csv')
     print("CSV 파일 로드 완료: influencers.csv, posts.csv")
 except FileNotFoundError as e:
     print(f"오류: 필요한 CSV 파일({e.filename})을 찾을 수 없습니다. scraper.py가 정상적으로 실행되었는지 확인하세요.")
@@ -16,7 +16,7 @@ except Exception as e:
 # SQLite 데이터베이스 연결
 try:
     # mvp.db 파일이 없으면 새로 생성됩니다.
-    con = sqlite3.connect('mvp.db')
+    con = sqlite3.connect('data/mvp.db')
     print("데이터베이스 연결 성공: mvp.db")
 
     # 데이터프레임을 SQL 테이블로 저장

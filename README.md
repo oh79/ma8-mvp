@@ -53,18 +53,55 @@
 ## 실행 (Run Application)
 
 1.  **Flask API 서버 실행:**
-    *   `.env` 파일에 `FLASK_APP=api.py` 설정이 되어 있는지 확인합니다. (없으면 추가)
+    *   `.env` 파일에 필요한 모든 API 키 및 설정 (인스타그램 계정, OCR, Papago, CLOVA Studio)이 올바르게 입력되었는지 확인합니다.
     *   터미널에서 다음 명령어를 실행합니다:
       ```bash
-      flask run
+      python src/api.py
       ```
-    *   (백그라운드 실행은 필요에 따라 `&` 등을 사용)
+    *   서버가 `http://127.0.0.1:5000` 에서 실행됩니다.
 2.  **Streamlit UI 실행:**
     *   다른 터미널에서 다음 명령어를 실행합니다:
       ```bash
       streamlit run app.py
       ```
     *   웹 브라우저에서 자동으로 열리는 Streamlit 앱 페이지에서 검색어를 입력하여 사용합니다.
+
+## API 엔드포인트 테스트 (추가 섹션)
+
+Flask API 서버가 실행 중인 상태에서 다음 `curl` 명령을 사용하여 각 API 엔드포인트의 기본 기능을 테스트할 수 있습니다.
+
+*   **검색 API (`/search`):**
+    ```bash
+    # GET 요청, 쿼리 파라미터로 검색어 전달
+    curl "http://localhost:5000/search?q=뷰티+팔로워+1만명" 
+    ```
+
+*   **CLOVA OCR API (`/ocr`):**
+    ```bash
+    # POST 요청, 이미지 파일을 form-data로 전송
+    # samples/ocr_test.jpg 부분은 실제 테스트할 이미지 경로로 변경
+    curl -X POST http://localhost:5000/ocr -F "image=@samples/ocr_test.jpg"
+    ```
+
+*   **Papago 번역 API (`/translate`):**
+    ```bash
+    # POST 요청, JSON 본문으로 번역할 내용 전달
+    # (Windows curl 사용 시 인코딩 문제 해결 위해 파일 사용 권장)
+    # 1. src/translate_payload.json 파일 생성 (UTF-8 인코딩)
+    #    {"text": "안녕하세요", "source": "ko", "target": "en"}
+    # 2. curl 명령어 실행
+    curl -X POST http://localhost:5000/translate -H "Content-Type: application/json" -d @src/translate_payload.json
+    ```
+
+*   **CLOVA Studio Embedding API (`/embedding`):**
+    ```bash
+    # POST 요청, JSON 본문으로 임베딩할 텍스트 전달
+    # (Windows curl 사용 시 인코딩 문제 해결 위해 파일 사용 권장)
+    # 1. src/embedding_payload.json 파일 생성 (UTF-8 인코딩)
+    #    {"text": "테스트할 문장을 입력하세요."}
+    # 2. curl 명령어 실행
+    curl -X POST http://localhost:5000/embedding -H "Content-Type: application/json" -d @src/embedding_payload.json
+    ```
 
 ## 주요 파일 설명
 

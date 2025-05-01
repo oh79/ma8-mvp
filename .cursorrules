@@ -1,0 +1,83 @@
+# 프로젝트 개발 지침
+
+## 코드 품질
+- 모든 코드는 가독성 최우선, 단일 책임 원칙(SRP)을 준수합니다.
+- 중복 코드는 최소화하고 재사용 가능한 함수/클래스로 분리합니다.
+- 하드코딩 값은 상수(UPPER_SNAKE_CASE)로 분리합니다.
+
+## 코드 스타일
+- 들여쓰기는 공백 2칸으로 통일합니다.
+- 한 줄 길이는 80자 이하로 유지합니다.
+- 함수 및 변수 이름은 snake_case, 클래스는 PascalCase로 작성합니다.
+- 주석은 '왜(why)'를 설명하는 수준으로 작성합니다.
+
+## 문서화
+- 모든 API 엔드포인트 및 주요 함수에는 docstring을 작성합니다.
+- README.md에 프로젝트 설정, 실행 방법, 의존성 등을 상세 기술합니다.
+- 복잡 로직/알고리즘은 별도 문서(docs/)에 작성하고 링크합니다.
+- 변경 사항은 CHANGELOG.md에 기록합니다.
+
+## 테스트
+- 신규 기능마다 단위 테스트(pytest) 작성
+- 테스트 커버리지 80% 이상 유지
+- 테스트는 독립적으로 실행 가능하도록 작성
+
+## 보안
+- 사용자 입력은 항상 검증 및 이스케이프 처리
+- 민감 정보(토큰, 비밀번호)는 .env 또는 보안 저장소에서 관리
+- SQL 인젝션, XSS 방어 로직을 반드시 구현
+
+## 성능
+- SQLite 인덱스 최적화로 쿼리 성능 향상
+- 불필요한 API 호출 최소화
+- 대용량 처리 시 배치/비동기 작업 고려
+
+## 버전 관리
+- 커밋 메시지는 설명적으로 작성
+- 기능별 브랜치에서 개발 후 PR 리뷰 및 머지
+- 메인 브랜치는 항상 배포 가능한 상태로 유지
+
+## 네이밍 컨벤션
+- **Python 모듈/스크립트**: snake_case.py (예: nlp_parse.py)
+- **패키지(폴더)**: snake_case (예: streamlit_app)
+- **클래스**: PascalCase (예: ScraperClient)
+- **함수/변수**: snake_case (예: fetch_instagram_data)
+- **상수**: UPPER_SNAKE_CASE (예: NUM_POSTS_TO_FETCH)
+
+## 프로젝트 구조
+```
+ma8-mvp/
+├── .env
+├── .gitignore
+├── .cursorrules
+├── Dockerfile
+├── requirements.txt
+├── README.md
+├── app.py             # Streamlit 앱 실행 파일
+├── src/               # 소스 코드 디렉토리
+│   ├── api.py
+│   ├── etl.py
+│   ├── scraper.py
+│   ├── nlp_parse.py
+│   ├── search_api.py    # 검색 API Blueprint (추가/변경)
+│   ├── ocr_api.py       # OCR API Blueprint (추가/변경)
+│   ├── translation_api.py # Papago 번역 API Blueprint (추가)
+│   └── embedding_api.py   # CLOVA Studio Embedding API Blueprint (추가)
+├── data/              # 데이터 파일 디렉토리 (버전 관리 제외될 수 있음)
+│   ├── influencers.csv
+│   ├── posts.csv
+│   ├── meta.csv
+│   ├── vecs.npy
+│   └── mvp.db
+├── scripts/           # 보조 스크립트 디렉토리
+│   ├── embed.py
+│   └── clip_test.py
+├── logs/              # 로그 파일 디렉토리 (버전 관리 제외)
+│   └── scraping_log.md
+├── docs/              # 문서 디렉토리
+│   ├── dependencies_overview.md
+│   └── example.md
+├── tests/             # 테스트 코드 디렉토리 (추가)
+│   └── test_ocr_api.py # OCR API 테스트 코드 (추가)
+└── .venv/             # 가상 환경 (버전 관리 제외)
+```
