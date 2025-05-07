@@ -4,26 +4,11 @@ import logging
 from flask import Blueprint, request, jsonify, current_app
 from dotenv import load_dotenv
 
-# .env 로드 (Blueprint 로딩 시)
-# load_dotenv() # 앱 팩토리 패턴 등 사용 시 주 앱에서 관리하는 것이 더 적합할 수 있음
-
 # Blueprint 생성
 ocr_bp = Blueprint('ocr', __name__)
 
 # 로거 설정
 logger = logging.getLogger(__name__)
-
-# --- CLOVA OCR 설정 (제거) ---
-# 모듈 레벨에서 환경 변수를 읽는 대신, 요청 컨텍스트 내에서 앱 설정을 사용
-# NAVER_OCR_INVOKE_URL = os.getenv("NAVER_OCR_INVOKE_URL")
-# OCR_API_PATH = "/general"
-# OCR_URL = f"{NAVER_OCR_INVOKE_URL}{OCR_API_PATH}" if NAVER_OCR_INVOKE_URL else None
-# HEADERS = {
-#     "X-NCP-APIGW-API-KEY-ID": os.getenv("X-NCP-APIGW-API-KEY-ID"),
-#     "X-NCP-APIGW-API-KEY": os.getenv("X-NCP-APIGW-API-KEY")
-# }
-# ... 환경 변수 확인 로직 제거 ...
-# --- CLOVA OCR 설정 끝 ---
 
 @ocr_bp.route('/ocr', methods=['POST'])
 def ocr():

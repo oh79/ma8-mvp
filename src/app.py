@@ -2,10 +2,12 @@ from flask import Flask
 import logging
 import os
 from dotenv import load_dotenv
-from search_api import search_bp # 검색 Blueprint 임포트
-from ocr_api import ocr_bp # OCR Blueprint 임포트
-from translation_api import translation_bp # 번역 Blueprint 임포트
-from embedding_api import embedding_bp # 임베딩 Blueprint 임포트
+
+# 새 구조에 맞게 Blueprint 임포트 경로 수정
+from api.routes.search import search_bp
+from api.routes.ocr import ocr_bp
+from api.routes.translation import translation_bp
+from api.routes.embedding import embedding_bp
 
 # .env 파일 로드 (앱 시작 시)
 load_dotenv()
