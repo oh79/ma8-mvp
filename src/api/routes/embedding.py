@@ -37,6 +37,10 @@ def get_embedding():
     if not embedding_url or not clova_headers:
         logger.error("CLOVA Studio API 설정(URL 또는 Headers)이 앱 설정에 없어 API를 호출할 수 없습니다.")
         return jsonify({"error": "CLOVA Studio API service configuration error"}), 500
+    
+    # 디버깅을 위한 URL 및 헤더 로깅
+    logger.debug(f"CLOVA Studio API URL: {embedding_url}")
+    logger.debug(f"CLOVA Studio API 헤더: {clova_headers}")
 
     # API 요청 데이터 준비 (JSON)
     api_payload = {
@@ -50,12 +54,16 @@ def get_embedding():
 
         logger.info(f"CLOVA Studio Embedding API 응답 코드: {response.status_code}")
         result_data = response.json()
+        
+        # 응답 로깅
+        logger.debug(f"CLOVA Studio API 응답: {result_data}")
 
         # API 응답 상태 확인 (성공 시 status.code 가 "20000")
         if result_data.get('status', {}).get('code') == "20000":
             embedding_vector = result_data.get('result', {}).get('embedding')
             input_tokens = result_data.get('result', {}).get('inputTokens')
             if embedding_vector is not None:
+                logger.info(f"임베딩 생성 성공: 차원={len(embedding_vector)}, 입력 토큰={input_tokens}")
                 # 성공 응답 구성 (필요에 따라 inputTokens 포함)
                 return jsonify({
                     "embedding": embedding_vector,

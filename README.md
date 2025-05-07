@@ -35,13 +35,13 @@
     *   (선택사항) `scraper.py` 상단의 `TARGET_HASHTAGS`, `MAX_USERS_TO_COLLECT`, `HASHTAG_MEDIA_COUNT` 등을 조절합니다.
     *   스크립트를 실행하여 인플루언서 및 게시물 데이터를 수집합니다.
       ```bash
-      python src/scraper.py
+      python src/data/scraper.py
       ```
     *   (선택사항) `scraping_log.md` 파일에 실행 결과를 기록합니다.
 2.  **ETL 및 API 처리:**
     *   스크래핑 결과를 SQLite 데이터베이스에 저장하고 API 호출을 통해 추가 데이터를 생성합니다.
       ```bash
-      python src/etl.py
+      python src/data/etl.py
       ```
     *   ETL 결과 검증:
       ```bash
@@ -146,6 +146,33 @@ Flask API 서버가 실행 중인 상태에서 다음 `curl` 명령을 사용하
 *   **ETL 검증 (`verify_etl.py`):**
     *   데이터베이스 테이블 검증
     *   결측치 확인 및 데이터 통계 제공
+
+## Week2: 데이터 수집 & ETL
+
+### 스크래퍼 실행
+```bash
+python src/data/scraper.py
+```
+
+### ETL 실행
+```bash
+python src/data/etl.py
+```
+
+### ETL 검증
+```bash
+python verify_etl.py
+```
+
+## 전체 파이프라인 통합 테스트
+```bash
+# 크롤러 & ETL
+python src/data/scraper.py
+python src/data/etl.py
+
+# 검증
+python verify_etl.py
+```
 
 ## Week3 계획 (TODO)
 
