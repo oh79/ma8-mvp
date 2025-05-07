@@ -24,7 +24,7 @@
 
 ## 보안
 - 사용자 입력은 항상 검증 및 이스케이프 처리
-- 민감 정보(토큰, 비밀번호)는 .env 또는 보안 저장소에서 관리
+# - 민감 정보(토큰, 비밀번호)는 .env 또는 보안 저장소에서 관리
 - SQL 인젝션, XSS 방어 로직을 반드시 구현
 
 ## 성능
@@ -53,31 +53,52 @@ ma8-mvp/
 ├── Dockerfile
 ├── requirements.txt
 ├── README.md
-├── app.py             # Streamlit 앱 실행 파일
-├── src/               # 소스 코드 디렉토리
-│   ├── api.py
-│   ├── etl.py
-│   ├── scraper.py
-│   ├── nlp_parse.py
-│   ├── search_api.py    # 검색 API Blueprint (추가/변경)
-│   ├── ocr_api.py       # OCR API Blueprint (추가/변경)
-│   ├── translation_api.py # Papago 번역 API Blueprint (추가)
-│   └── embedding_api.py   # CLOVA Studio Embedding API Blueprint (추가)
-├── data/              # 데이터 파일 디렉토리 (버전 관리 제외될 수 있음)
-│   ├── influencers.csv
+├── pytest.ini
+├── session.json
+├── src/                   # 소스 코드 디렉토리
+│   ├── app.py             # 메인 애플리케이션 파일
+│   ├── streamlit_app.py   # Streamlit 애플리케이션 파일
+│   ├── translate_payload.json
+│   ├── embedding_payload.json
+│   ├── api/               # API 관련 코드
+│   │   ├── __init__.py
+│   │   ├── routes/        # API 라우트
+│   │   │   ├── __init__.py
+│   │   │   ├── search.py
+│   │   │   ├── ocr.py
+│   │   │   ├── translation.py
+│   │   │   └── embedding.py
+│   │   └── utils/         # API 유틸리티
+│   ├── core/              # 핵심 기능
+│   │   ├── __init__.py
+│   │   └── nlp.py
+│   └── data/              # 데이터 처리
+│       ├── __init__.py
+│       ├── scraper.py
+│       ├── etl.py
+│       └── validation.py
+├── data/                  # 데이터 파일 디렉토리
+│   ├── mvp.db
 │   ├── posts.csv
+│   ├── influencers.csv
+│   ├── lens_influencers_test.txt
+│   ├── lens_influencers.txt
 │   ├── meta.csv
-│   ├── vecs.npy
-│   └── mvp.db
-├── scripts/           # 보조 스크립트 디렉토리
+│   └── vecs.npy
+├── scripts/               # 보조 스크립트 디렉토리
 │   ├── embed.py
-│   └── clip_test.py
-├── logs/              # 로그 파일 디렉토리 (버전 관리 제외)
-│   └── scraping_log.md
-├── docs/              # 문서 디렉토리
-│   ├── dependencies_overview.md
-│   └── example.md
-├── tests/             # 테스트 코드 디렉토리 (추가)
-│   └── test_ocr_api.py # OCR API 테스트 코드 (추가)
-└── .venv/             # 가상 환경 (버전 관리 제외)
+│   ├── clip_test.py
+│   ├── ocr_test.py
+│   └── ocr_api_test.py
+├── samples/               # 샘플 데이터 디렉토리
+│   ├── ocr/
+│   │   ├── lens/
+│   │   └── test/
+│   └── texts/
+├── logs/                  # 로그 파일 디렉토리
+├── docs/                  # 문서 디렉토리
+├── tests/                 # 테스트 코드 디렉토리
+│   ├── test_ocr_api.py
+│   └── test_image_for_api.jpg
+└── .venv/                 # 가상 환경 (버전 관리 제외)
 ```

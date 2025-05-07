@@ -1,6 +1,6 @@
-# 📈 인스타 인플루언서 검색 MVP (Sprint 2 - Week 1 완료)
+# 📈 인스타 인플루언서 검색 MVP (Sprint 2 - Week 2 완료)
 
-간단한 자연어 쿼리를 통해 인스타그램 인플루언서를 검색하는 MVP 프로젝트입니다. **Week 1에서는 자연어 쿼리에서 팔로워 수 범위를 추출하여 필터링하는 기능과 텍스트 유사도 기반 검색 기능을 구현했습니다.**
+간단한 자연어 쿼리를 통해 인스타그램 인플루언서를 검색하는 MVP 프로젝트입니다. **Week 1에서는 자연어 쿼리에서 팔로워 수 범위를 추출하여 필터링하는 기능과 텍스트 유사도 기반 검색 기능을 구현했습니다. Week 2에서는 렌즈 관련 데이터 수집 및 API 통합 기능이 추가되었습니다.**
 
 ## Setup
 
@@ -35,18 +35,22 @@
     *   (선택사항) `scraper.py` 상단의 `TARGET_HASHTAGS`, `MAX_USERS_TO_COLLECT`, `HASHTAG_MEDIA_COUNT` 등을 조절합니다.
     *   스크립트를 실행하여 인플루언서 및 게시물 데이터를 수집합니다.
       ```bash
-      python scraper.py
+      python src/data/scraper.py
       ```
     *   (선택사항) `scraping_log.md` 파일에 실행 결과를 기록합니다.
-2.  **SQLite 데이터베이스 로드:**
-    *   스크래핑 결과를 SQLite 데이터베이스(`mvp.db`)에 저장합니다.
+2.  **ETL 및 API 처리:**
+    *   스크래핑 결과를 SQLite 데이터베이스에 저장하고 API 호출을 통해 추가 데이터를 생성합니다.
       ```bash
-      python etl.py
+      python src/data/etl.py
+      ```
+    *   ETL 결과 검증:
+      ```bash
+      python verify_etl.py
       ```
 3.  **임베딩 벡터 생성:**
     *   수집된 인플루언서의 자기소개를 벡터화하여 검색에 사용될 파일을 생성합니다.
       ```bash
-      python embed.py
+      python scripts/embed.py
       ```
     *   이 과정은 `influencers.csv` 파일이 변경될 때마다 다시 실행해야 합니다.
 
@@ -105,14 +109,16 @@ Flask API 서버가 실행 중인 상태에서 다음 `curl` 명령을 사용하
 
 ## 주요 파일 설명
 
-*   `scraper.py`: 인스타그램 데이터를 스크래핑하여 `influencers.csv`, `posts.csv` 파일로 저장합니다. (Week 1: biography 기반 카테고리 추정 로직 포함)
-*   `etl.py`: CSV 데이터를 SQLite DB(`mvp.db`)로 로드합니다.
+*   `scraper.py`: 인스타그램 데이터를 스크래핑하여 `influencers.csv`, `posts.csv` 파일로 저장합니다. (Week 1: biography 기반 카테고리 추정 로직 포함, Week 2: 렌즈 관련 해시태그 기반 수집 로직 추가)
+*   `etl.py`: CSV 데이터를 SQLite DB(`mvp.db`)로 로드하고 API 호출을 통해 데이터를 보강합니다. (Week 2: OCR, 번역, 임베딩 기능 추가)
+*   `api_utils.py`: 외부 API(OCR, 번역, 임베딩)를 호출하는 함수를 제공합니다. (Week 2 추가)
+*   `verify_etl.py`: ETL 처리 결과를 검증하는 스크립트입니다. (Week 2 추가)
 *   `embed.py`: 인플루언서 자기소개 텍스트를 임베딩하여 `vecs.npy`와 `meta.csv`를 생성합니다.
 *   `nlp_parse.py`: 자연어 쿼리를 분석하여 **팔로워 범위** 필터 조건을 추출합니다. (Week 1: 카테고리, 제품 키워드 추출 로직은 포함되어 있으나 개선 필요)
 *   `api.py`: Flask 기반의 검색 API 서버입니다. **팔로워 수 필터링** 및 유사도 검색 로직을 포함합니다. (Week 1: 카테고리 필터링 로직은 주석 처리)
 *   `app.py`: Streamlit 기반의 웹 UI입니다. 사용자가 검색어를 입력하고 결과를 확인합니다. (Week 1: 결과 테이블에 카테고리 컬럼 표시 추가)
 *   `requirements.txt`: 프로젝트 실행에 필요한 Python 라이브러리 목록입니다.
-*   `.env`: 인스타그램 계정 정보 및 `FLASK_APP` 설정을 저장합니다.
+*   `.env`: 인스타그램 계정 정보, API 키 설정을 저장합니다.
 *   `mvp.db`: 스크래핑된 데이터가 저장되는 SQLite 데이터베이스 파일입니다.
 *   `vecs.npy`: 인플루언서 자기소개 임베딩 벡터 데이터입니다.
 *   `meta.csv`: 임베딩 벡터 순서와 매칭되는 메타데이터입니다. (현재 사용되지 않음)
@@ -127,7 +133,48 @@ Flask API 서버가 실행 중인 상태에서 다음 `curl` 명령을 사용하
 *   Streamlit UI에서 검색어 입력 및 결과(username, follower_count, category) 확인 (`app.py`)
 *   데이터 스크래핑(`scraper.py`), DB 적재(`etl.py`), 임베딩 생성(`embed.py`) 파이프라인 구축
 
-## Sprint 2 - Week 2 계획 (TODO)
+## Sprint 2 - Week 2 완료 기능
+
+*   **렌즈 관련 데이터 수집 (`scraper.py`):**
+    *   렌즈 관련 해시태그 기반 인플루언서 및 게시물 수집 
+    *   user_pk 기반 게시물 수집 로직 추가
+    *   수집된 인플루언서 목록 저장 (lens_influencers.txt)
+*   **API 호출 통합 (`etl.py`, `api_utils.py`):**
+    *   OCR API를 통한 이미지 내 제품명 추출
+    *   Papago 번역 API를 통한 캡션 번역
+    *   CLOVA Studio API를 통한 이미지-텍스트 임베딩 생성
+*   **ETL 검증 (`verify_etl.py`):**
+    *   데이터베이스 테이블 검증
+    *   결측치 확인 및 데이터 통계 제공
+
+## Week2: 데이터 수집 & ETL
+
+### 스크래퍼 실행
+```bash
+python src/data/scraper.py
+```
+
+### ETL 실행
+```bash
+python src/data/etl.py
+```
+
+### ETL 검증
+```bash
+python verify_etl.py
+```
+
+## 전체 파이프라인 통합 테스트
+```bash
+# 크롤러 & ETL
+python src/data/scraper.py
+python src/data/etl.py
+
+# 검증
+python verify_etl.py
+```
+
+## Week3 계획 (TODO)
 
 *   **카테고리 필터링 기능 활성화 (`api.py`):**
     *   `nlp_parse.py`에서 추출된 카테고리 정보를 사용하여 검색 결과를 필터링하는 로직 구현 및 활성화.
@@ -136,15 +183,12 @@ Flask API 서버가 실행 중인 상태에서 다음 `curl` 명령을 사용하
     *   제품 키워드 추출 로직 개선 (단순 명사 추출 이상).
     *   불용어 처리 정교화.
     *   카테고리 분류 정확도 향상 방안 검토 (추가 키워드, 모델 사용 등).
-*   **스크래핑 안정성 및 정보 확장 (`scraper.py`):**
-    *   API 요청 오류 처리 및 재시도 로직 강화.
-    *   카테고리 추정 정확도 향상 방안 모색 (예: 게시물 해시태그 분석 추가).
 *   **검색 결과 개선:**
     *   유사도 계산 방식 및 모델 파라미터 튜닝.
     *   결과 랭킹 로직 개선 (예: 팔로워 수 가중치 부여 등).
-*   **(선택) UI 개선 (`app.py`):**
-    *   상세 보기에 더 많은 정보 표시 (biography 등).
-    *   검색 결과 시각화 (예: 광고 비율 파이 차트 - `posts.csv` 데이터 활용 필요).
+*   **UI 개선 (`app.py`):**
+    *   상세 보기에 translated_caption, product_name 표시
+    *   이미지 미리보기 개선
 
 ## Sprint 1 워크플로우 (참고용)
 

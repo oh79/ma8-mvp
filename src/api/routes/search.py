@@ -5,7 +5,9 @@ from sentence_transformers import SentenceTransformer
 import logging
 import math
 from flask import Blueprint, request, jsonify
-from nlp_parse import parse # 같은 src 디렉토리에 있으므로 직접 import
+
+# 코어 모듈 import 경로 수정
+from core.nlp import parse
 
 # Blueprint 생성
 search_bp = Blueprint('search', __name__)
