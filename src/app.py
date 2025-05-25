@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 # 새 구조에 맞게 Blueprint 임포트 경로 수정
-# from api.routes.search import search_bp  # 검색 API는 임시로 비활성화
+from api.routes.search import search_bp  # 검색 API 활성화
 from api.routes.ocr import ocr_bp
 from api.routes.translation import translation_bp
 from api.routes.embedding import embedding_bp
@@ -55,7 +55,7 @@ else:
     logger.info("모든 API 설정이 성공적으로 로드되었습니다.")
 
 # Blueprint 등록
-# app.register_blueprint(search_bp)  # 검색 API는 임시로 비활성화
+app.register_blueprint(search_bp)  # 검색 API 활성화
 app.register_blueprint(ocr_bp)
 app.register_blueprint(translation_bp) # 번역 Blueprint 등록
 app.register_blueprint(embedding_bp) # 임베딩 Blueprint 등록

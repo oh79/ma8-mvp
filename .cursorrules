@@ -47,14 +47,18 @@
 ## 프로젝트 구조
 ```
 ma8-mvp/
-├── .env
-├── .gitignore
-├── .cursorrules
-├── Dockerfile
-├── requirements.txt
-├── README.md
-├── pytest.ini
-├── session.json
+├── .env                   # 환경 변수 설정 파일
+├── .gitignore             # Git 무시 파일 목록
+├── .cursorrules           # 프로젝트 개발 지침
+├── Dockerfile             # Docker 빌드 설정
+├── requirements.txt       # 패키지 의존성 목록
+├── README.md              # 프로젝트 설명서
+├── pytest.ini             # pytest 설정
+├── session.json           # 인스타그램 세션 캐시
+├── config.yaml            # 스크래퍼 설정 파일
+├── run_scraper.py         # 스크래퍼 실행 스크립트
+├── run_scraper.sh         # 스크래퍼 실행 쉘 스크립트
+├── verify_etl.py          # ETL 검증 스크립트
 ├── src/                   # 소스 코드 디렉토리
 │   ├── app.py             # 메인 애플리케이션 파일
 │   ├── streamlit_app.py   # Streamlit 애플리케이션 파일
@@ -69,22 +73,32 @@ ma8-mvp/
 │   │   │   ├── translation.py
 │   │   │   └── embedding.py
 │   │   └── utils/         # API 유틸리티
+│   │       ├── __init__.py
+│   │       └── api_utils.py
 │   ├── core/              # 핵심 기능
 │   │   ├── __init__.py
 │   │   └── nlp.py
 │   └── data/              # 데이터 처리
 │       ├── __init__.py
-│       ├── scraper.py
-│       ├── etl.py
+│       ├── scraper.py     # 인스타그램 메인 스크래퍼 모듈
+│       ├── api.py         # 인스타그램 API 클라이언트
+│       ├── db.py          # 데이터베이스 관리
+│       ├── config.py      # 설정 관리
+│       ├── utils.py       # 유틸리티 함수
+│       ├── etl.py         # ETL 처리
 │       └── validation.py
 ├── data/                  # 데이터 파일 디렉토리
-│   ├── mvp.db
-│   ├── posts.csv
-│   ├── influencers.csv
-│   ├── lens_influencers_test.txt
-│   ├── lens_influencers.txt
-│   ├── meta.csv
-│   └── vecs.npy
+│   ├── instagram.db       # 인스타그램 데이터 DuckDB 파일
+│   ├── mvp.db             # MVP SQLite 데이터베이스
+│   ├── posts.csv          # 수집된 게시물 데이터
+│   ├── influencers.csv    # 수집된 인플루언서 데이터
+│   ├── crawler_checkpoint.csv # 체크포인트 데이터
+│   ├── lens_influencers_test.txt # 테스트용 인플루언서 목록
+│   ├── lens_influencers.txt # 인플루언서 타겟 목록
+│   ├── meta.csv           # 임베딩 메타데이터
+│   ├── vecs.npy           # 임베딩 벡터 데이터
+│   ├── scraping_progress.json # 스크래핑 진행 상황
+│   └── backup/            # 데이터 백업 디렉토리
 ├── scripts/               # 보조 스크립트 디렉토리
 │   ├── embed.py
 │   ├── clip_test.py
@@ -102,3 +116,22 @@ ma8-mvp/
 │   └── test_image_for_api.jpg
 └── .venv/                 # 가상 환경 (버전 관리 제외)
 ```
+
+## 변경 이력
+
+### 2025-05-08 - 스크래퍼 모듈화 및 인코딩 문제 해결
+- 기존 스크래퍼 코드를 모듈화하여 유지보수성 향상
+  - `src/data/api.py`: 인스타그램 API 관련 기능
+  - `src/data/db.py`: 데이터베이스 관리
+  - `src/data/config.py`: 설정 관리
+  - `src/data/utils.py`: 유틸리티 함수
+- 로그 파일 인코딩 문제 해결 
+  - `RotatingFileHandler`로 변경 및 UTF-8 인코딩 명시
+  - Windows 환경에서 표준 출력/오류 스트림의 인코딩 설정
+- DuckDB 관련 오류 해결
+  - HttpUrl 객체를 문자열로 변환하는 로직 추가
+  - 데이터 타입 변환 관리 개선
+- 스크래퍼 실행 안정성 개선
+  - 중간 저장 기능 강화 (시그널 핸들러)
+  - 백그라운드 모니터링 추가
+  - 설정 파일(config.yaml) 도입
