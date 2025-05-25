@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
+    command: --mode crawl --parallel 8
+    networks:
+      - scraper-network
+    depends_on:
+      - proxy
+
+  proxy:
+    image: serjs/go-proxy-simple:latest
+    environment:
+      - PROXY_AUTH=user:password
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - scraper-network
+
+networks:
+  scraper-network:
+    driver: bridge 

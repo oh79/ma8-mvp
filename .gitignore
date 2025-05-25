@@ -156,9 +156,18 @@ venv.bak/
 .ruff_cache/
 
 # Session files (like session.json from scraper)
-session.json
+# session.json # 이미 삭제됨
 
 # Generated data files
-*.csv
-*.db
-*.npy 
+# *.csv # 주석 처리 또는 삭제 (필요한 원본 csv는 포함)
+data/mvp.db
+data/vecs.npy
+data/meta.csv # 임베딩 시 생성되는 메타 데이터
+posts.csv # 스크래퍼가 생성하는 원본 데이터 (포함 여부 결정 필요, 우선 제외)
+influencers.csv # 스크래퍼가 생성하는 원본 데이터 (포함 여부 결정 필요, 우선 제외)
+
+# Log files
+logs/*
+
+# Backup files
+*.bak 
