@@ -1,0 +1,32 @@
+# 인스타그램 스크래퍼 설정 파일
+save_interval: 10  # 몇 명마다 중간 저장할지
+proxy_switch_threshold: 3  # 연속 실패 몇 번 이후 프록시 전환할지
+rate_limit_cooldown: 60  # 속도 제한 감지 시 대기 시간(초)
+max_proxy_failures: 5  # 프록시당 최대 실패 횟수
+num_posts_to_fetch: 10  # 사용자당 가져올 게시물 수
+max_workers: 5  # 병렬 처리 스레드 수
+log_level: INFO  # 로그 레벨 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+
+# 프록시 목록 (비워두면 직접 연결)
+proxies: []
+#  - "http://username:password@proxy1.example.com:8080"
+#  - "http://username:password@proxy2.example.com:8080"
+
+# User-Agent 목록 (랜덤 선택)
+user_agents:
+  - "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 284.0.0.20.117"
+  - "Mozilla/5.0 (Android 10; Mobile; rv:123.0) Gecko/123.0 Firefox/123.0" 
+  - "Instagram 269.0.0.18.75 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; 6T; OnePlus6T; qcom; en_US; 314665256)"
+  - "Mozilla/5.0 (Linux; Android 13; SM-A515F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36"
+  - "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
+
+# 검색할 해시태그 목록
+target_hashtags:
+  - "렌즈"
+  - "콘택트렌즈"
+  - "컬러렌즈"
+  - "소프트렌즈"
+  - "contactlens"
+  - "colorlens"
+  - "lens"
+  - "softlens" 
